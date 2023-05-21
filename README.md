@@ -43,9 +43,44 @@ PLSAでは，共起情報を用いてトピック抽出をすることが可能�
 kyouki_dfで共起情報を記したデータフレームを作成し，kyouki_df_to_matrixで共起行列にします.
 
 # 学習
+## PLSAとは
 共起行列を基に感性と係り受け表現をモデル化していきます．
+PLSAとはクラスタリング手法の1つで、
+1.文書dがP(d)で選ばれる
+2.トピックzがP(z|d)で選ばれる
+3.単語wがP(w|z)で生成される
+というモデルです。
 ```math
 {P(d,w) = P(d)\sum_{z}P(z|d)P(w|z)
 }
 ```
+しかし，今回は  
+
+```math
+{P(d,w) = \sum_{z}P(z)P(d|z)P(w|z)
+}
+```
+と式変形をして扱い，P(d)を係り受け表現，P(w)を感性語とし，対数尤度
+```math
+{L = \sum_{d}\sum_{w}N(d,w)\log P(d,w)
+}
+```
+が最大になる`P(z), P(d|z), P(w|z)`を、EMアルゴリズムを使って求めます
+### EMアルゴリズム
+1.Estep
+```math
+{P(z|d,w) = \frac{P\left( z \right)P\left( d | z \right)P\left( w | z \right)}{\sum_{z} P\left( z \right)P\left( d | z \right)P\left( w | z \right)}
+}
+```
+2.Mstep
+```math
+{\begin{eqnarray}
+P\left( z \right) & = & \frac{\sum_{d} \sum_{w} N_{d, w} P\left( z | d, w \right)}{\sum_{d} \sum_{w} N_{d, w}} \\
+P\left( d | z \right) & = & \frac{\sum_{w} N_{d, w} P \left( z | d, w \right)}{\sum_{d} \sum_{w} N_{d, w} P \left( z | d, w \right)} \\
+P\left( w | z \right) & = & \frac{\sum_{d} N_{d, w} P \left( z | d, w \right)}{\sum_{d} \sum_{w} N_{d, w} P \left( z | d, w \right)}
+\end{eqnarray}
+```
+対数尤度が収束するまで、E,Mstepを繰り返し計算しています．
+
+
 
